@@ -2,7 +2,11 @@
 This is a playground for practicing relational DB 
 modelling with many relations.
 
-Here's the setup:
+Task:
+
+Model the scenario using an RDBMS and a RESTful API.
+
+Scenario:
 
 You work at a very secretive company which is organised into
 __Departments__, __Projects__ and __Teams__ (like a hierarchy). Let's call them
