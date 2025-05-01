@@ -1,7 +1,8 @@
 package secretive.exception;
 
 public enum ErrorMessage {
-    NULL_NOT_ALLOWED("the field [%s] should not be null");
+    NOT_FOUND_BY_NAME("object [%s] with name [%s] does not exist"),
+    NOT_FOUND_BY_ID("object [%s] with id [%s] does not exist");
 
     private final String template;
 

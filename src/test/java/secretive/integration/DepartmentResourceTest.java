@@ -13,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 import secretive.department.DepartmentDto;
 import secretive.department.presentation.DepartmentCreationRequest;
+import secretive.exception.ErrorResponse;
+
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -60,6 +63,36 @@ public class DepartmentResourceTest {
         assertThat(createdDto).isEqualTo(retrievedDto);
 
         assertThat(response.getStatusCode().value()).isEqualTo(200);
+    }
+
+    @Test
+    void return404WhenRetrievingMissingDepartmentByName() {
+        var response = template.getForEntity(path + "/name/missing-dept", ErrorResponse.class);
+
+        assertThat(response.getStatusCode().value()).isEqualTo(404);
+        assertThat(response.getBody().errors())
+                .anyMatch(it -> it.contains("[department] with name [missing-dept] does not exist"));
+    }
+
+    @Test
+    void return404WhenRetrievingMissingDepartmentById() {
+        UUID randomId = UUID.randomUUID();
+        var response = template.getForEntity(path + "/" + randomId, ErrorResponse.class);
+
+        assertThat(response.getStatusCode().value()).isEqualTo(404);
+        assertThat(response.getBody().errors())
+                .anyMatch(it -> it.contains("[department] with id [%s] does not exist".formatted(randomId)));
+    }
+
+    @Test
+    void invalidCreationRequestIsRejected() {
+        var creationRequest = new DepartmentCreationRequest(null);
+
+        var response = template.postForEntity(path, creationRequest, ErrorResponse.class);
+
+        assertThat(response.getStatusCode().value()).isEqualTo(400);
+        assertThat(response.getBody().errors())
+                .anyMatch(it -> it.contains("[name]: must not be null"));
     }
 
 }
