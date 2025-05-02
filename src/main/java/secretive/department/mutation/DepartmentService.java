@@ -2,6 +2,7 @@ package secretive.department.mutation;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import secretive.concept.ApiService;
 import secretive.department.DepartmentDto;
 import secretive.department.presentation.DepartmentCreationRequest;
 import secretive.exception.throwable.ApiException;
@@ -10,10 +11,10 @@ import secretive.exception.ErrorMessage;
 import java.util.UUID;
 
 @Service
-public class DepartmentService {
+public class DepartmentService implements ApiService<Department> {
     private final DepartmentRepo departmentRepo;
 
-    public DepartmentService(DepartmentRepo departmentRepo) {
+    DepartmentService(DepartmentRepo departmentRepo) {
         this.departmentRepo = departmentRepo;
     }
 
@@ -33,5 +34,13 @@ public class DepartmentService {
         return departmentRepo.findByName(name)
                 .orElseThrow(() -> new ApiException(ErrorMessage.NOT_FOUND_BY_NAME, 404, "department", name))
                 .toDto();
+    }
+
+    @Override
+    public Department getReference(UUID id) {
+        if (id == null) {
+            throw new ApiException(ErrorMessage.OBJECT_FIELD_SHOULD_NOT_BE_NULL, 400, "department", "id");
+        }
+        return departmentRepo.getReferenceById(id);
     }
 }
