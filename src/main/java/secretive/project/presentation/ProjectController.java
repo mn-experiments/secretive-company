@@ -26,7 +26,7 @@ public class ProjectController {
         return projectService.retrieve(id);
     }
 
-    @GetMapping("{name}")
+    @GetMapping("name/{name}")
     ProjectDto retrieveById(@PathVariable String name) {
         return projectService.retrieveByName(name);
     }

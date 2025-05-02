@@ -30,7 +30,7 @@ public class Project {
     @NotNull
     OffsetDateTime updatedAt;
 
-    private Project() {}
+    Project() {}
 
     Project(ProjectCreationRequest projectCreationRequest, Department parentDepartment) {
         name = projectCreationRequest.name();

@@ -24,7 +24,7 @@ public class Department implements ApiEntity {
     @NotNull
     String name;
 
-    private Department() {}
+    Department() {}
 
     Department(DepartmentCreationRequest creationRequest) {
         name = creationRequest.name();
