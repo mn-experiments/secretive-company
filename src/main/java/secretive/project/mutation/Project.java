@@ -2,6 +2,7 @@ package secretive.project.mutation;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import secretive.concept.ApiEntity;
 import secretive.department.mutation.Department;
 import secretive.project.ProjectDto;
 import secretive.project.presentation.ProjectCreationRequest;
@@ -11,7 +12,7 @@ import java.time.ZoneOffset;
 import java.util.UUID;
 
 @Entity
-public class Project {
+public class Project implements ApiEntity {
     @Id
     @NotNull
     UUID id;

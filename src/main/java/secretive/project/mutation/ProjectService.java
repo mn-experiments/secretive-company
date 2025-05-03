@@ -1,6 +1,7 @@
 package secretive.project.mutation;
 
 import org.springframework.stereotype.Service;
+import secretive.concept.ApiService;
 import secretive.department.mutation.DepartmentService;
 import secretive.exception.ErrorMessage;
 import secretive.exception.throwable.ApiException;
@@ -11,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class ProjectService {
+public class ProjectService implements ApiService<Project> {
     private final DepartmentService departmentService;
     private final ProjectRepo projectRepo;
 
@@ -43,4 +44,8 @@ public class ProjectService {
                 .stream().map(Project::toDto).toList();
     }
 
+    @Override
+    public Project getReference(UUID id) {
+        return projectRepo.getReferenceById(id);
+    }
 }
