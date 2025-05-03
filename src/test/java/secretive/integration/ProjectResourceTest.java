@@ -33,8 +33,9 @@ public class ProjectResourceTest extends ResourceTest {
     void canCreateProject() {
         var departmentCreationRequest = new DepartmentCreationRequest("d1");
 
-        var department = template.postForEntity(departmentPath, departmentCreationRequest, DepartmentDto.class)
-                .getBody();
+        var clazz = DepartmentDto.class;
+        var p = departmentPath;
+        var department = doPost(p, departmentCreationRequest, clazz).getBody();
 
         var projectCreationRequest = new ProjectCreationRequest("p1", department.id());
 
@@ -52,8 +53,8 @@ public class ProjectResourceTest extends ResourceTest {
     void canRetrieveProject() {
         var departmentCreationRequest = new DepartmentCreationRequest("d1");
 
-        var department = template.postForEntity(departmentPath, departmentCreationRequest, DepartmentDto.class)
-                .getBody();
+        var departmentDtoResponseEntity = doPost(departmentPath, departmentCreationRequest, DepartmentDto.class);
+        var department = departmentDtoResponseEntity.getBody();
 
         var projectCreationRequest1 = new ProjectCreationRequest("p1", department.id());
         var projectCreationRequest2 = new ProjectCreationRequest("p2", department.id());
