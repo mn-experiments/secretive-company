@@ -14,21 +14,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProjectResourceTest extends ResourceTest {
 
-    private String projectPath;
-    private String projectPathWithId;
-    private String projectPathWithName;
-    private String projectPathWithDepartment;
-    private String departmentPath;
-
-    @BeforeEach
-    void pathSetup() {
-        projectPath = "http://localhost:%d/project".formatted(port);
-        projectPathWithId = projectPath + "/%s";
-        projectPathWithName = projectPath + "/name/%s";
-        projectPathWithDepartment = projectPath + "?departmentId=%s";
-        departmentPath = "http://localhost:%d/department".formatted(port);
-    }
-
     @Test
     void canCreateProject() {
         var departmentCreationRequest = new DepartmentCreationRequest("d1");
@@ -72,10 +57,10 @@ public class ProjectResourceTest extends ResourceTest {
                 ProjectDto.class
         ).getBody();
 
-        var departmentProjects = (template.getForEntity(
+        var departmentProjects = template.getForEntity(
                 projectPathWithDepartment.formatted(department.id()),
                 ProjectDto[].class
-        ).getBody());
+        ).getBody();
 
         assertThat(createdProject1).isEqualTo(retrievedProject1);
         assertThat(createdProject2).isEqualTo(retrievedProject2);

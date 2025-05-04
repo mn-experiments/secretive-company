@@ -2,22 +2,28 @@ package secretive.exception;
 
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import secretive.exception.throwable.ApiException;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 @RestControllerAdvice
 public class RestExceptionHandler {
 
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(RuntimeException.class)
-    void processUnhandledException(RuntimeException e) {
+    ResponseEntity<ErrorResponse> processUnhandledException(RuntimeException e) {
+        var constraintViolation = findConstraintViolation(e);
+
+        if (constraintViolation.isPresent()) {
+            return processBeanValidationException(constraintViolation.get());
+        }
+        return new ResponseEntity<>(new ErrorResponse("internal server error"), HttpStatusCode.valueOf(500));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
@@ -64,5 +70,53 @@ public class RestExceptionHandler {
         var response = new ErrorResponse(messages);
 
         return new ResponseEntity<>(response, HttpStatusCode.valueOf(400));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    ResponseEntity<ErrorResponse> proceessMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
+        var illegalArgument = findIllegalArgument(e);
+
+        if (illegalArgument.isPresent()) {
+            return processIllegalArgumentException(illegalArgument.get());
+        }
+
+        return processUnhandledException(new RuntimeException(e));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    ResponseEntity<ErrorResponse> processIllegalArgumentException(IllegalArgumentException e) {
+        var response = new ErrorResponse(e.getMessage());
+
+        return new ResponseEntity<>(response, HttpStatusCode.valueOf(400));
+    }
+
+    private Optional<ConstraintViolationException> findConstraintViolation(RuntimeException e) {
+        var attemptCount = 10;
+        var cause = e.getCause();
+        while (attemptCount-- > 0) {
+            if (cause instanceof ConstraintViolationException) {
+                return Optional.of((ConstraintViolationException) cause);
+            } else if (cause.getCause() == null) {
+                return Optional.empty();
+            }
+            cause = cause.getCause();
+        }
+
+        return Optional.empty();
+    }
+
+    private Optional<IllegalArgumentException> findIllegalArgument(MethodArgumentTypeMismatchException e) {
+        var attemptCount = 10;
+        var cause = e.getCause();
+        while (attemptCount-- > 0) {
+            if (cause instanceof IllegalArgumentException) {
+                return Optional.of((IllegalArgumentException) cause);
+            } else if (cause.getCause() == null) {
+                return Optional.empty();
+            }
+            cause = cause.getCause();
+        }
+
+        return Optional.empty();
     }
 }

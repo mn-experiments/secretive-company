@@ -24,6 +24,19 @@ public abstract class ResourceTest {
     @Autowired
     protected TestRestTemplate template;
 
+    protected String teamPath;
+    protected String teamPathWithId;
+    protected String teamPathWithName;
+    protected String teamPathWithProject;
+    protected String projectPath;
+    protected String projectPathWithId;
+    protected String projectPathWithName;
+    protected String projectPathWithDepartment;
+
+    protected String departmentPath;
+
+    private String[] tables = {"department", "project", "team"};
+
     @Autowired
     private JdbcClient jdbcTemplate;
 
@@ -38,14 +51,27 @@ public abstract class ResourceTest {
      * uses a random port, in such a case a real http server is created and run on a different thread,
      * not on the thread where the DB transactions happen.
      * </p>
-     * @see
-     * <a href=https://docs.spring.io/spring-boot/reference/testing/spring-boot-applications.html>
+     *
+     * @see <a href=https://docs.spring.io/spring-boot/reference/testing/spring-boot-applications.html>
      * spring docs
      * </a>
      */
     @BeforeEach
     void dbCleanup() {
-        JdbcTestUtils.deleteFromTables(jdbcTemplate, "department", "project", "team");
+        JdbcTestUtils.deleteFromTables(jdbcTemplate, tables);
+
+        teamPath = "http://localhost:%d/team".formatted(port);
+        teamPathWithId = teamPath + "/%s";
+        teamPathWithName = teamPath + "/name/%s";
+        teamPathWithProject = teamPath + "?projectId=%s";
+
+        projectPath = "http://localhost:%d/project".formatted(port);
+        projectPathWithId = projectPath + "/%s";
+        projectPathWithName = projectPath + "/name/%s";
+        projectPathWithDepartment = projectPath + "?departmentId=%s";
+
+        departmentPath = "http://localhost:%d/department".formatted(port);
+
     }
 
     @DynamicPropertySource
