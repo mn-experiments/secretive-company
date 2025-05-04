@@ -32,13 +32,9 @@ public class TeamResourceTest extends ResourceTest {
         var createdTeam = createTeam("d1", "p1", "t1").getBody();
 
         var idRetrievedTeam =
-                template.getForEntity(
-                                teamPathWithId.formatted(createdTeam.id()), TeamDto.class)
-                        .getBody();
+                doGet(teamPathWithId.formatted(createdTeam.id()), TeamDto.class).getBody();
 
-        var nameRetrievedTeam = template.getForEntity(
-                        teamPathWithName.formatted(createdTeam.name()), TeamDto.class)
-                .getBody();
+        var nameRetrievedTeam = doGet(teamPathWithName.formatted(createdTeam.name()), TeamDto.class).getBody();
 
         assertThat(createdTeam).isEqualTo(idRetrievedTeam);
         assertThat(idRetrievedTeam).isEqualTo(nameRetrievedTeam);
@@ -51,8 +47,7 @@ public class TeamResourceTest extends ResourceTest {
         var project = team1.project();
         var team2 = doPost(teamPath, new TeamCreationRequest("t2", team1.project().id()), TeamDto.class).getBody();
 
-        var teams = template.getForEntity(teamPathWithProject.formatted(project.id()), TeamDto[].class).getBody();
-        var x = 1;
+        var teams = doGet(teamPathWithProject.formatted(project.id()), TeamDto[].class).getBody();
 
         assertThat(teams).containsExactlyInAnyOrder(team1, team2);
     }

@@ -22,7 +22,7 @@ public abstract class ResourceTest {
     protected Integer port;
 
     @Autowired
-    protected TestRestTemplate template;
+    private TestRestTemplate template;
 
     protected String teamPath;
     protected String teamPathWithId;
@@ -81,10 +81,11 @@ public abstract class ResourceTest {
         registry.add("spring.datasource.username", db::getUsername);
     }
 
-    protected <T> ResponseEntity<T> doPost(
-            String p,
-            Object body,
-            Class<T> clazz) {
+    protected <T> ResponseEntity<T> doPost(String p, Object body, Class<T> clazz) {
         return template.postForEntity(p, body, clazz);
+    }
+
+    protected <T> ResponseEntity<T> doGet(String path, Class<T> clazz) {
+        return template.getForEntity(path, clazz);
     }
 }

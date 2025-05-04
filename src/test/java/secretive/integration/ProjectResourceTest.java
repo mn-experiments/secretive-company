@@ -24,7 +24,7 @@ public class ProjectResourceTest extends ResourceTest {
 
         var projectCreationRequest = new ProjectCreationRequest("p1", department.id());
 
-        var response = template.postForEntity(projectPath, projectCreationRequest, ProjectDto.class);
+        var response = doPost(projectPath, projectCreationRequest, ProjectDto.class);
 
         assertThat(response.getStatusCode().value()).isEqualTo(200);
 
@@ -44,23 +44,16 @@ public class ProjectResourceTest extends ResourceTest {
         var projectCreationRequest1 = new ProjectCreationRequest("p1", department.id());
         var projectCreationRequest2 = new ProjectCreationRequest("p2", department.id());
 
-        var createdProject1 = template.postForEntity(projectPath, projectCreationRequest1, ProjectDto.class).getBody();
-        var createdProject2 = template.postForEntity(projectPath, projectCreationRequest2, ProjectDto.class).getBody();
+        var createdProject1 = doPost(projectPath, projectCreationRequest1, ProjectDto.class).getBody();
+        var createdProject2 = doPost(projectPath, projectCreationRequest2, ProjectDto.class).getBody();
 
-        var retrievedProject1 = template.getForEntity(
-                projectPathWithId.formatted(createdProject1.id()),
-                ProjectDto.class
-        ).getBody();
+        var retrievedProject1 = doGet(projectPathWithId.formatted(createdProject1.id()), ProjectDto.class).getBody();
 
-        var retrievedProject2 = template.getForEntity(
-                projectPathWithName.formatted(createdProject2.name()),
-                ProjectDto.class
-        ).getBody();
+        var retrievedProject2 =
+                doGet(projectPathWithName.formatted(createdProject2.name()), ProjectDto.class).getBody();
 
-        var departmentProjects = template.getForEntity(
-                projectPathWithDepartment.formatted(department.id()),
-                ProjectDto[].class
-        ).getBody();
+        var departmentProjects =
+                doGet(projectPathWithDepartment.formatted(department.id()), ProjectDto[].class).getBody();
 
         assertThat(createdProject1).isEqualTo(retrievedProject1);
         assertThat(createdProject2).isEqualTo(retrievedProject2);
@@ -74,7 +67,7 @@ public class ProjectResourceTest extends ResourceTest {
 
         var projectCreationRequest = new ProjectCreationRequest("p1", department.id());
 
-        var createdProject = template.postForEntity(projectPath, projectCreationRequest, ErrorResponse.class);
+        var createdProject = doPost(projectPath, projectCreationRequest, ErrorResponse.class);
 
         assertThat(createdProject.getStatusCode().value()).isEqualTo(400);
         assertThat(createdProject.getBody().errors())

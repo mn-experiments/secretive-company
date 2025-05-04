@@ -23,10 +23,9 @@ public class DepartmentResourceTest extends ResourceTest {
     void canCreateDepartment() {
         var creationRequest = new DepartmentCreationRequest("dep1");
 
-        var response = template.postForEntity(path, creationRequest, DepartmentDto.class);
+        var response = doPost(path, creationRequest, DepartmentDto.class);
         var createdDto = response.getBody();
-        var retrievedDto = template
-                .getForEntity(path + "/name/" + creationRequest.name(), DepartmentDto.class)
+        var retrievedDto = doGet(path + "/name/" + creationRequest.name(), DepartmentDto.class)
                 .getBody();
 
         assertThat(createdDto).isEqualTo(retrievedDto);
@@ -36,7 +35,7 @@ public class DepartmentResourceTest extends ResourceTest {
 
     @Test
     void return404WhenRetrievingMissingDepartmentByName() {
-        var response = template.getForEntity(path + "/name/missing-dept", ErrorResponse.class);
+        var response = doGet(path + "/name/missing-dept", ErrorResponse.class);
 
         assertThat(response.getStatusCode().value()).isEqualTo(404);
         assertThat(response.getBody().errors())
@@ -46,7 +45,7 @@ public class DepartmentResourceTest extends ResourceTest {
     @Test
     void return404WhenRetrievingMissingDepartmentById() {
         UUID randomId = UUID.randomUUID();
-        var response = template.getForEntity(path + "/" + randomId, ErrorResponse.class);
+        var response = doGet(path + "/" + randomId, ErrorResponse.class);
 
         assertThat(response.getStatusCode().value()).isEqualTo(404);
         assertThat(response.getBody().errors())
@@ -57,7 +56,7 @@ public class DepartmentResourceTest extends ResourceTest {
     void invalidCreationRequestIsRejected() {
         var creationRequest = new DepartmentCreationRequest(null);
 
-        var response = template.postForEntity(path, creationRequest, ErrorResponse.class);
+        var response = doPost(path, creationRequest, ErrorResponse.class);
 
         assertThat(response.getStatusCode().value()).isEqualTo(400);
         assertThat(response.getBody().errors())
