@@ -1,8 +1,8 @@
 create table department(
-    id uuid default gen_random_uuid(),
+    id uuid not null,
     name varchar(100) unique not null,
-    created_at timestamptz,
-    updated_at timestamptz,
+    created_at timestamptz not null,
+    updated_at timestamptz not null,
     primary key(id)
 );
 

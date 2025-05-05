@@ -1,6 +1,9 @@
 package secretive.project.mutation;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
 import secretive.concept.ApiEntity;
 import secretive.department.mutation.Department;
@@ -21,7 +24,6 @@ public class Project implements ApiEntity {
     String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "department_id")
     @NotNull
     Department department;
 
