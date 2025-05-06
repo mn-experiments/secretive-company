@@ -18,9 +18,7 @@ public class ProjectResourceTest extends ResourceTest {
     void canCreateProject() {
         var departmentCreationRequest = new DepartmentCreationRequest("d1");
 
-        var clazz = DepartmentDto.class;
-        var p = departmentPath;
-        var department = doPost(p, departmentCreationRequest, clazz).getBody();
+        var department = doPost(departmentPath, departmentCreationRequest, DepartmentDto.class).getBody();
 
         var projectCreationRequest = new ProjectCreationRequest("p1", department.id());
 
@@ -61,7 +59,7 @@ public class ProjectResourceTest extends ResourceTest {
     }
 
     @Test
-    void failCreationIfMissingDepartment() {
+    void return400IfMissingDepartment() {
 
         var department = new DepartmentDto(UUID.randomUUID(), "random-dep");
 
@@ -72,5 +70,22 @@ public class ProjectResourceTest extends ResourceTest {
         assertThat(createdProject.getStatusCode().value()).isEqualTo(400);
         assertThat(createdProject.getBody().errors())
                 .contains("failed to create because the linked [department] does not exist");
+    }
+
+    @Test
+    void return400IfMissingName() {
+        var departmentCreationRequest = new DepartmentCreationRequest("d1");
+
+        var department = doPost(departmentPath, departmentCreationRequest, DepartmentDto.class).getBody();
+
+        var projectCreationRequest = new ProjectCreationRequest(null, department.id());
+
+        var response = doPost(projectPath, projectCreationRequest, ErrorResponse.class);
+
+        assertThat(response.getStatusCode().value()).isEqualTo(400);
+
+        var errorResponse = response.getBody();
+        assertThat(errorResponse.errors())
+                .anyMatch(error -> error.contains("field [name]: must not be null"));
     }
 }

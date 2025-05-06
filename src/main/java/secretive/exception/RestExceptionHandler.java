@@ -65,7 +65,7 @@ public class RestExceptionHandler {
         for (var x : e.getConstraintViolations()) {
             var field = x.getPropertyPath().toString();
             var msg = x.getMessage();
-            messages.add("[%s]: %s".formatted(field, msg));
+            messages.add("field [%s]: %s".formatted(field, msg));
         }
         var response = new ErrorResponse(messages);
 

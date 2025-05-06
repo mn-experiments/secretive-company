@@ -10,6 +10,8 @@ import secretive.project.presentation.ProjectCreationRequest;
 import secretive.team.TeamDto;
 import secretive.team.presentation.TeamCreationRequest;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TeamResourceTest extends ResourceTest {
@@ -50,6 +52,18 @@ public class TeamResourceTest extends ResourceTest {
         var teams = doGet(teamPathWithProject.formatted(project.id()), TeamDto[].class).getBody();
 
         assertThat(teams).containsExactlyInAnyOrder(team1, team2);
+    }
+
+    @Test
+    void return400WhenMissingParentProject() {
+        var t = new TeamCreationRequest("t1", UUID.randomUUID());
+
+        var errorResponse = doPost(teamPath, t, ErrorResponse.class);
+
+        assertThat(errorResponse.getStatusCode().value()).isEqualTo(400);
+        assertThat(errorResponse.getBody().errors())
+                .anyMatch(error -> error.contains("failed to create because the linked [project] does not exist"));
+
     }
 
     private ResponseEntity<TeamDto> createTeam(String departmentName, String projectName, String teamName) {
