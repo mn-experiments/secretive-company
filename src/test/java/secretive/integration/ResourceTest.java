@@ -35,7 +35,9 @@ public abstract class ResourceTest {
 
     protected String departmentPath;
 
-    private String[] tables = {"department", "project", "team"};
+    private String[] tables = {"department_department_exclusion", "department_project_exclusion",
+            "department_team_exclusion", "department",
+            "project", "team"};
 
     @Autowired
     private JdbcClient jdbcTemplate;

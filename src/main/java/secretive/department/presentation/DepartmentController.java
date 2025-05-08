@@ -18,7 +18,8 @@ public class DepartmentController {
 
     @PostMapping
     public DepartmentDto create(@RequestBody DepartmentCreationRequest creationRequest) {
-        return departmentService.create(creationRequest);
+        DepartmentDto departmentDto = departmentService.create(creationRequest);
+        return departmentDto;
     }
 
     @GetMapping("{id}")

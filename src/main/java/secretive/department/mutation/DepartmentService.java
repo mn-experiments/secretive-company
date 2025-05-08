@@ -9,6 +9,7 @@ import secretive.exception.throwable.ApiException;
 import secretive.exception.ErrorMessage;
 
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class DepartmentService implements ApiService<Department> {
@@ -20,7 +21,10 @@ public class DepartmentService implements ApiService<Department> {
 
     @Transactional
     public DepartmentDto create(DepartmentCreationRequest creationRequest) {
-        Department save = departmentRepo.save(new Department(creationRequest));
+        var excludedDepartmentReferences = creationRequest.excludedDepartments()
+                .stream().map(this::getReference).collect(Collectors.toSet());
+
+        Department save = departmentRepo.save(new Department(creationRequest, excludedDepartmentReferences));
         return save.toDto();
     }
 

@@ -1,11 +1,14 @@
 package secretive.integration;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import secretive.department.DepartmentDto;
+import secretive.department.ExcludedDepartmentDto;
 import secretive.department.presentation.DepartmentCreationRequest;
 import secretive.exception.ErrorResponse;
 
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,6 +64,31 @@ public class DepartmentResourceTest extends ResourceTest {
         assertThat(response.getStatusCode().value()).isEqualTo(400);
         assertThat(response.getBody().errors())
                 .anyMatch(it -> it.contains("[name]: must not be null"));
+    }
+
+    @Nested
+    class ExclusionTests {
+        @Test
+        void canCreateDepartmentExclusions() {
+            var creationRequest2 = new DepartmentCreationRequest("d2");
+            var creationRequest3 = new DepartmentCreationRequest("d3");
+
+            var dep2 = doPost(path, creationRequest2, DepartmentDto.class).getBody();
+            var dep3 = doPost(path, creationRequest3, DepartmentDto.class).getBody();
+
+            var excludedDep2 = new ExcludedDepartmentDto(dep2.id(), dep2.name());
+            var excludedDep3 = new ExcludedDepartmentDto(dep3.id(), dep3.name());
+
+            var creationRequest1 = new DepartmentCreationRequest("d1", Set.of(dep2.id(), dep3.id()));
+
+            var response = doPost(path, creationRequest1, DepartmentDto.class);
+
+            assertThat(response.getStatusCode().value()).isEqualTo(200);
+
+            var dep1 = response.getBody();
+
+            assertThat(dep1.excludedDepartments()).containsExactlyInAnyOrder(excludedDep2, excludedDep3);
+        }
     }
 
 }

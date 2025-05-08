@@ -1,10 +1,11 @@
 package secretive.exception;
 
 import jakarta.validation.ConstraintViolationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -16,6 +17,8 @@ import java.util.Optional;
 @RestControllerAdvice
 public class RestExceptionHandler {
 
+    private static Logger log = LoggerFactory.getLogger(RestExceptionHandler.class);
+
     @ExceptionHandler(RuntimeException.class)
     ResponseEntity<ErrorResponse> processUnhandledException(RuntimeException e) {
         var constraintViolation = findConstraintViolation(e);
@@ -23,6 +26,10 @@ public class RestExceptionHandler {
         if (constraintViolation.isPresent()) {
             return processBeanValidationException(constraintViolation.get());
         }
+        return internalServerError();
+    }
+
+    private ResponseEntity<ErrorResponse> internalServerError() {
         return new ResponseEntity<>(new ErrorResponse("internal server error"), HttpStatusCode.valueOf(500));
     }
 
@@ -33,6 +40,11 @@ public class RestExceptionHandler {
             var cause = figureOutForeignKeyErrorCause(message, e);
 
             return new ResponseEntity<>(new ErrorResponse(cause), HttpStatusCode.valueOf(400));
+        } else if (message.contains("null value in column")) {
+            var cause = figureOutNullValueErrorCause(message, e);
+
+            log.error(cause);
+            return internalServerError();
         }
 
         throw new RuntimeException("could not hande DB exception", e);
@@ -50,6 +62,14 @@ public class RestExceptionHandler {
             return "failed to create because the linked [%s] does not exist".formatted(foreignKeyReferencedObject);
         }
         throw new RuntimeException("could not hande DB exception", e);
+    }
+
+    private String figureOutNullValueErrorCause(String msg, DataIntegrityViolationException e) {
+        var firstQuote = msg.indexOf("\"") + 1;
+        var secondQuote = msg.indexOf("\"", firstQuote);
+
+        String substring = msg.substring(firstQuote, secondQuote);
+        return "DB constraint: field [%s] should not be null".formatted(substring);
     }
 
     @ExceptionHandler(ApiException.class)

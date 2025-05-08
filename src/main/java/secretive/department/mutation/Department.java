@@ -1,15 +1,17 @@
 package secretive.department.mutation;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import secretive.concept.ApiEntity;
 import secretive.department.DepartmentDto;
+import secretive.department.ExcludedDepartmentDto;
 import secretive.department.presentation.DepartmentCreationRequest;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 public class Department implements ApiEntity {
@@ -24,6 +26,12 @@ public class Department implements ApiEntity {
     @NotNull
     String name;
 
+    @ManyToMany
+    @JoinTable(name = "department_department_exclusion",
+            joinColumns = {@JoinColumn(name = "department_id")},
+            inverseJoinColumns = {@JoinColumn(name = "excluded_department_id")})
+    Set<Department> excludedDepartments;
+
     @NotNull
     OffsetDateTime createdAt;
 
@@ -33,9 +41,10 @@ public class Department implements ApiEntity {
     Department() {
     }
 
-    Department(DepartmentCreationRequest creationRequest) {
+    Department(DepartmentCreationRequest creationRequest, Set<Department> excludedDepartments) {
         id = UUID.randomUUID();
         name = creationRequest.name();
+        this.excludedDepartments = excludedDepartments;
 
         var now = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC);
         createdAt = now;
@@ -43,7 +52,12 @@ public class Department implements ApiEntity {
     }
 
     public DepartmentDto toDto() {
-        return new DepartmentDto(id, name);
+        return new DepartmentDto(id, name,
+                excludedDepartments.stream().map(Department::toExcludedDepartmentDto).collect(Collectors.toSet()));
+    }
+
+    public ExcludedDepartmentDto toExcludedDepartmentDto() {
+        return new ExcludedDepartmentDto(id, name);
     }
 
 }
