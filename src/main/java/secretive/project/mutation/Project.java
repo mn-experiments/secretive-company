@@ -6,7 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
 import secretive.concept.ApiEntity;
-import secretive.concept.EntityReference;
+import secretive.concept.EntityReferenceFactory.EntityReference;
 import secretive.department.mutation.Department;
 import secretive.project.ExcludedProjectDto;
 import secretive.project.ProjectDto;

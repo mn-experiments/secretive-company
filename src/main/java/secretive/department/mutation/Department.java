@@ -3,7 +3,7 @@ package secretive.department.mutation;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import secretive.concept.ApiEntity;
-import secretive.concept.EntityReference;
+import secretive.concept.EntityReferenceFactory.EntityReference;
 import secretive.department.DepartmentDto;
 import secretive.department.ExcludedDepartmentDto;
 import secretive.department.presentation.DepartmentCreationRequest;
@@ -14,7 +14,6 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Entity
