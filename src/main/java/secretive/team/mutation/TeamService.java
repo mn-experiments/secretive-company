@@ -1,9 +1,9 @@
 package secretive.team.mutation;
 
 import org.springframework.stereotype.Service;
+import secretive.concept.EntityReferenceFactory;
 import secretive.exception.ErrorMessage;
 import secretive.exception.throwable.ApiException;
-import secretive.project.mutation.ProjectService;
 import secretive.team.TeamDto;
 import secretive.team.presentation.TeamCreationRequest;
 
@@ -13,16 +13,16 @@ import java.util.UUID;
 @Service
 public class TeamService {
     private final TeamRepo teamRepo;
-    private final ProjectService projectService;
+    private final EntityReferenceFactory referenceFactory;
 
-    public TeamService(TeamRepo teamRepo, ProjectService projectService) {
+    public TeamService(TeamRepo teamRepo, EntityReferenceFactory referenceFactory) {
         this.teamRepo = teamRepo;
-        this.projectService = projectService;
+        this.referenceFactory = referenceFactory;
     }
 
     public TeamDto create(TeamCreationRequest creationRequest) {
-        var parentProject = projectService.getReference(creationRequest.projectId());
-        var team = new Team(creationRequest, parentProject);
+        var parentProjectReference = referenceFactory.getProjectReference(creationRequest.projectId());
+        var team = new Team(creationRequest, parentProjectReference);
 
         return teamRepo.save(team).toDto();
     }
@@ -46,4 +46,5 @@ public class TeamService {
 
         return team.stream().map(Team::toDto).toList();
     }
+
 }

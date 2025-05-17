@@ -1,7 +1,12 @@
 package secretive.concept;
 
-import java.util.UUID;
+import org.springframework.stereotype.Service;
 
-public interface ApiService<T extends ApiEntity> {
-    T getReference(UUID id);
+@Service
+public class ApiService<T extends ApiEntity> {
+    protected final EntityReferenceFactory entityReferenceFactory;
+
+    protected ApiService(EntityReferenceFactory entityReferenceFactory) {
+        this.entityReferenceFactory = entityReferenceFactory;
+    }
 }

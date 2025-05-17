@@ -1,8 +1,9 @@
 package secretive.project.mutation;
 
 import org.springframework.stereotype.Service;
-import secretive.concept.ApiService;
-import secretive.department.mutation.DepartmentService;
+import secretive.concept.EntityReference;
+import secretive.concept.EntityReferenceFactory;
+import secretive.department.mutation.Department;
 import secretive.exception.ErrorMessage;
 import secretive.exception.throwable.ApiException;
 import secretive.project.ProjectDto;
@@ -12,17 +13,18 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class ProjectService implements ApiService<Project> {
-    private final DepartmentService departmentService;
+public class ProjectService {
+    private final EntityReferenceFactory referenceFactory;
     private final ProjectRepo projectRepo;
 
-    ProjectService(DepartmentService departmentService, ProjectRepo projectRepo) {
-        this.departmentService = departmentService;
+    ProjectService(EntityReferenceFactory referenceFactory, ProjectRepo projectRepo) {
+        this.referenceFactory = referenceFactory;
         this.projectRepo = projectRepo;
     }
 
     public ProjectDto create(ProjectCreationRequest creationRequest) {
-        var project = new Project(creationRequest, departmentService.getReference(creationRequest.departmentId()));
+        var parentDepartmentReference = referenceFactory.getDepartmentReference(creationRequest.departmentId());
+        var project = new Project(creationRequest, parentDepartmentReference);
 
         return projectRepo.save(project).toDto();
     }
@@ -42,10 +44,5 @@ public class ProjectService implements ApiService<Project> {
     public List<ProjectDto> retrieveAllByDepartment(UUID departmentId) {
         return projectRepo.findAllByDepartmentId(departmentId)
                 .stream().map(Project::toDto).toList();
-    }
-
-    @Override
-    public Project getReference(UUID id) {
-        return projectRepo.getReferenceById(id);
     }
 }

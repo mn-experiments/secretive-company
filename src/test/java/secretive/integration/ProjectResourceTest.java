@@ -71,6 +71,8 @@ public class ProjectResourceTest extends ResourceTest {
 
         assertThat(createdProject.getStatusCode().value()).isEqualTo(400);
         assertThat(createdProject.getBody().errors())
-                .contains("failed to create because the linked [department] does not exist");
+                .contains(
+                        "a link to object [department] with id [%s] is not possible because it does not exist".formatted(
+                                department.id()));
     }
 }

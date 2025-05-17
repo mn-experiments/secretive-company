@@ -3,14 +3,18 @@ package secretive.department.mutation;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import secretive.concept.ApiEntity;
+import secretive.concept.EntityReference;
 import secretive.department.DepartmentDto;
 import secretive.department.ExcludedDepartmentDto;
 import secretive.department.presentation.DepartmentCreationRequest;
+import secretive.project.mutation.Project;
+import secretive.team.mutation.Team;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Entity
@@ -32,6 +36,18 @@ public class Department implements ApiEntity {
             inverseJoinColumns = {@JoinColumn(name = "excluded_department_id")})
     Set<Department> excludedDepartments;
 
+    @ManyToMany
+    @JoinTable(name = "department_project_exclusion",
+            joinColumns = {@JoinColumn(name = "department_id")},
+            inverseJoinColumns = {@JoinColumn(name = "excluded_project_id")})
+    Set<Project> excludedProjects;
+
+    @ManyToMany
+    @JoinTable(name = "department_team_exclusion",
+            joinColumns = {@JoinColumn(name = "department_id")},
+            inverseJoinColumns = {@JoinColumn(name = "excluded_team_id")})
+    Set<Team> excludedTeams;
+
     @NotNull
     OffsetDateTime createdAt;
 
@@ -41,10 +57,16 @@ public class Department implements ApiEntity {
     Department() {
     }
 
-    Department(DepartmentCreationRequest creationRequest, Set<Department> excludedDepartments) {
+    Department(DepartmentCreationRequest creationRequest,
+               Set<EntityReference<Department>> excludedDepartments,
+               Set<EntityReference<Project>> excludedProjects,
+               Set<EntityReference<Team>> excludedTeams
+               ) {
         id = UUID.randomUUID();
         name = creationRequest.name();
-        this.excludedDepartments = excludedDepartments;
+        this.excludedDepartments = excludedDepartments.stream().map(EntityReference::value).collect(Collectors.toSet());
+        this.excludedProjects = excludedProjects.stream().map(EntityReference::value).collect(Collectors.toSet());;
+        this.excludedTeams = excludedTeams.stream().map(EntityReference::value).collect(Collectors.toSet());;
 
         var now = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC);
         createdAt = now;
@@ -53,7 +75,9 @@ public class Department implements ApiEntity {
 
     public DepartmentDto toDto() {
         return new DepartmentDto(id, name,
-                excludedDepartments.stream().map(Department::toExcludedDepartmentDto).collect(Collectors.toSet()));
+                excludedDepartments.stream().map(Department::toExcludedDepartmentDto).collect(Collectors.toSet()),
+                excludedProjects.stream().map(Project::excludedProjectDto).collect(Collectors.toSet()),
+                excludedTeams.stream().map(Team::toExcludedTeamDto).collect(Collectors.toSet()));
     }
 
     public ExcludedDepartmentDto toExcludedDepartmentDto() {

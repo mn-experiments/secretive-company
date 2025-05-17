@@ -2,29 +2,43 @@ package secretive.department.mutation;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import secretive.concept.ApiService;
+import secretive.concept.EntityReferenceFactory;
 import secretive.department.DepartmentDto;
 import secretive.department.presentation.DepartmentCreationRequest;
-import secretive.exception.throwable.ApiException;
 import secretive.exception.ErrorMessage;
+import secretive.exception.throwable.ApiException;
 
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-public class DepartmentService implements ApiService<Department> {
+public class DepartmentService {
+    private final EntityReferenceFactory referenceFactory;
     private final DepartmentRepo departmentRepo;
 
-    DepartmentService(DepartmentRepo departmentRepo) {
+    DepartmentService(EntityReferenceFactory referenceFactory, DepartmentRepo departmentRepo) {
+        this.referenceFactory = referenceFactory;
         this.departmentRepo = departmentRepo;
     }
 
     @Transactional
     public DepartmentDto create(DepartmentCreationRequest creationRequest) {
-        var excludedDepartmentReferences = creationRequest.excludedDepartments()
-                .stream().map(this::getReference).collect(Collectors.toSet());
+        var excludedDepartmentReferences = creationRequest.excludedDepartments().stream()
+                .map(referenceFactory::getDepartmentReference)
+                .collect(Collectors.toSet());
 
-        Department save = departmentRepo.save(new Department(creationRequest, excludedDepartmentReferences));
+        var excludedProjectsReferences = creationRequest.excludedProjects().stream()
+                .map(referenceFactory::getProjectReference)
+                .collect(Collectors.toSet());
+
+        var excludedTeamsReferences = creationRequest.excludedTeams().stream()
+                .map(referenceFactory::getTeamReference)
+                .collect(Collectors.toSet());
+
+        Department save = departmentRepo.save(new Department(creationRequest,
+                excludedDepartmentReferences,
+                excludedProjectsReferences,
+                excludedTeamsReferences));
         return save.toDto();
     }
 
@@ -40,11 +54,4 @@ public class DepartmentService implements ApiService<Department> {
                 .toDto();
     }
 
-    @Override
-    public Department getReference(UUID id) {
-        if (id == null) {
-            throw new ApiException(ErrorMessage.OBJECT_FIELD_SHOULD_NOT_BE_NULL, 400, "department", "id");
-        }
-        return departmentRepo.getReferenceById(id);
-    }
 }

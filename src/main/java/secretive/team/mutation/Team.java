@@ -5,7 +5,10 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
+import secretive.concept.ApiEntity;
+import secretive.concept.EntityReference;
 import secretive.project.mutation.Project;
+import secretive.team.ExcludedTeamDto;
 import secretive.team.TeamDto;
 import secretive.team.presentation.TeamCreationRequest;
 
@@ -14,7 +17,7 @@ import java.time.ZoneOffset;
 import java.util.UUID;
 
 @Entity
-class Team {
+public class Team implements ApiEntity {
     @Id
     @NotNull
     UUID id = UUID.randomUUID();
@@ -35,9 +38,9 @@ class Team {
     Team() {
     }
 
-    Team(TeamCreationRequest creationRequest, Project parentProject) {
+    Team(TeamCreationRequest creationRequest, EntityReference<Project> parentProject) {
         name = creationRequest.name();
-        project = parentProject;
+        project = parentProject.value();
 
         var now = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC);
         createdAt = now;
@@ -46,5 +49,9 @@ class Team {
 
     public TeamDto toDto() {
         return new TeamDto(id, name, project.toDto());
+    }
+
+    public ExcludedTeamDto toExcludedTeamDto() {
+        return new ExcludedTeamDto(id, name, project.toDto());
     }
 }

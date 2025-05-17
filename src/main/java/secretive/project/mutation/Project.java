@@ -6,7 +6,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
 import secretive.concept.ApiEntity;
+import secretive.concept.EntityReference;
 import secretive.department.mutation.Department;
+import secretive.project.ExcludedProjectDto;
 import secretive.project.ProjectDto;
 import secretive.project.presentation.ProjectCreationRequest;
 
@@ -33,12 +35,13 @@ public class Project implements ApiEntity {
     @NotNull
     OffsetDateTime updatedAt;
 
-    Project() {}
+    Project() {
+    }
 
-    Project(ProjectCreationRequest projectCreationRequest, Department parentDepartment) {
+    Project(ProjectCreationRequest projectCreationRequest, EntityReference<Department> parentDepartment) {
         name = projectCreationRequest.name();
         id = UUID.randomUUID();
-        department = parentDepartment;
+        department = parentDepartment.value();
 
         var now = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC);
 
@@ -48,5 +51,9 @@ public class Project implements ApiEntity {
 
     public ProjectDto toDto() {
         return new ProjectDto(id, name, department.toDto());
+    }
+
+    public ExcludedProjectDto excludedProjectDto() {
+        return new ExcludedProjectDto(id, name, department.toDto());
     }
 }
